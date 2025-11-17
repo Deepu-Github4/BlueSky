@@ -17,11 +17,14 @@ public class Card : MonoBehaviour
     private bool isFlipped = false;
     private bool isMatched = false;
     private bool isAnimating = false;
+    public bool initialized = false;
 
     private void Start()
     {
         backImage.sprite = backSprite;
         frontImage.sprite = frontSprite;
+
+        if (initialized) return;
 
         backImage.gameObject.SetActive(true);
         frontImage.gameObject.SetActive(false);
@@ -50,7 +53,6 @@ public class Card : MonoBehaviour
         isFlipped = !isFlipped;
         backImage.gameObject.SetActive(!isFlipped);
         frontImage.gameObject.SetActive(isFlipped);
-      //  AudioManager.Instance.PlaySFX(AudioManager.Instance.cardFlip);
 
         for (float t = 0; t < 1; t += Time.deltaTime * 8)
         {
@@ -81,5 +83,19 @@ public class Card : MonoBehaviour
     public bool IsMatched()
     {
         return isMatched;
+    }
+
+    public void FlipFaceUpInstant()
+    {
+        isFlipped = true;
+        backImage.gameObject.SetActive(false);
+        frontImage.gameObject.SetActive(true);
+    }
+
+    public void FlipFaceDownInstant()
+    {
+        isFlipped = false;
+        backImage.gameObject.SetActive(true);
+        frontImage.gameObject.SetActive(false);
     }
 }

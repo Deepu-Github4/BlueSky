@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine.UI;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -36,6 +37,9 @@ public class GameManager : MonoBehaviour
 
     public void GenerateBoard()
     {
+
+        StopAllCoroutines();
+
         foreach (Transform child in boardContainer)
             Destroy(child.gameObject);
 
@@ -145,13 +149,16 @@ public class GameManager : MonoBehaviour
         CheckGameOver();
     }
 
-    private System.Collections.IEnumerator FlipBackAfterDelay(Card a, Card b)
+    private IEnumerator FlipBackAfterDelay(Card a, Card b)
     {
         yield return new WaitForSeconds(0.6f);
-        a.FlipBack();
-        b.FlipBack();
-    }
 
+        if (a != null && a.gameObject != null && !a.IsMatched())
+            a.FlipBack();
+
+        if (b != null && b.gameObject != null && !b.IsMatched())
+            b.FlipBack();
+    }
 
     public void AddScore(int amount)
     {
@@ -171,12 +178,23 @@ public class GameManager : MonoBehaviour
         AudioManager.Instance.PlaySFX(AudioManager.Instance.levelComplete);
         LevelManager.Instance?.NextLevel();
     }
-
-    public void RestartLevel()
+    public void RestartButton()
     {
-        score = SaveSystem.LoadScore();
-        UIManager.Instance.UpdateScore(score);
+        LevelManager.Instance.RestartGame();
+    }
+    public void HomeButton()
+    {
+        SceneManager.LoadScene("HomeMenu");
+    }
 
-        GenerateBoard();
+    public IEnumerator InitialPreview(float delay)
+    {
+        foreach (Transform t in boardContainer)
+            t.GetComponent<Card>().FlipFaceUpInstant();
+
+        yield return new WaitForSeconds(delay);
+
+        foreach (Transform t in boardContainer)
+            t.GetComponent<Card>().FlipFaceDownInstant();
     }
 }
