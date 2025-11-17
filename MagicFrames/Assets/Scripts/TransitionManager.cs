@@ -5,8 +5,7 @@ public class TransitionManager : MonoBehaviour
 {
     public static TransitionManager Instance;
 
-    [SerializeField] private CanvasGroup fadePanel;
-    [SerializeField] private float fadeDuration = 0.6f;
+    private CanvasGroup cg;
 
     private void Awake()
     {
@@ -14,52 +13,34 @@ public class TransitionManager : MonoBehaviour
             Instance = this;
         else
             Destroy(gameObject);
+
+        cg = GetComponent<CanvasGroup>();
     }
 
-    private void Start()
+    public IEnumerator FadeOut(float duration = 0.5f)
     {
-        StartCoroutine(FadeIn());
-    }
-
-    public void FadeToNextLevel(System.Action onFadeComplete)
-    {
-        StartCoroutine(FadeOutIn(onFadeComplete));
-    }
-
-    private IEnumerator FadeOutIn(System.Action onFadeComplete)
-    {
-        // Fade Out
-        for (float t = 0; t < fadeDuration; t += Time.deltaTime)
+        for (float t = 0; t < duration; t += Time.deltaTime)
         {
-            fadePanel.alpha = t / fadeDuration;
+            cg.alpha = Mathf.Lerp(0, 1, t / duration);
             yield return null;
         }
-
-        fadePanel.alpha = 1;
-
-        onFadeComplete?.Invoke();
-
-        yield return new WaitForSeconds(0.15f);
-
-        for (float t = 0; t < fadeDuration; t += Time.deltaTime)
-        {
-            fadePanel.alpha = 1 - (t / fadeDuration);
-            yield return null;
-        }
-
-        fadePanel.alpha = 0;
+        cg.alpha = 1;
     }
 
-    private IEnumerator FadeIn()
+    public IEnumerator FadeIn(float duration = 0.5f)
     {
-        fadePanel.alpha = 1;
-
-        for (float t = 0; t < fadeDuration; t += Time.deltaTime)
+        for (float t = 0; t < duration; t += Time.deltaTime)
         {
-            fadePanel.alpha = 1 - (t / fadeDuration);
+            cg.alpha = Mathf.Lerp(1, 0, t / duration);
             yield return null;
         }
+        cg.alpha = 0;
+    }
 
-        fadePanel.alpha = 0;
+    public IEnumerator PlayTransition(float duration = 0.5f)
+    {
+        yield return FadeOut(duration);
+
+        yield return FadeIn(duration);
     }
 }

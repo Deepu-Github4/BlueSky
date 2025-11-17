@@ -160,6 +160,9 @@ public class GameManager : MonoBehaviour
 
     public void RestartLevel()
     {
+        score = SaveSystem.LoadScore();
+        UIManager.Instance.UpdateScore(score);
+
         GenerateBoard();
     }
 }

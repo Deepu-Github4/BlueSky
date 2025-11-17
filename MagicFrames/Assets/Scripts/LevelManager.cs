@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class LevelManager : MonoBehaviour
@@ -14,52 +15,74 @@ public class LevelManager : MonoBehaviour
             Destroy(gameObject);
     }
 
-    public void LoadLevel(int level)
+    private IEnumerator Start()
     {
-        currentLevel = level;
+        currentLevel = SaveSystem.LoadLevel();
+        UIManager.Instance.UpdateLevel(currentLevel);
 
-        switch (level)
+        GameManager.Instance.score = SaveSystem.LoadScore();
+        UIManager.Instance.UpdateScore(GameManager.Instance.score);
+
+        LoadLevel();
+
+        yield return TransitionManager.Instance.FadeIn(0.5f);
+    }
+
+    public void LoadLevel()
+    {
+        if (currentLevel == 1)
         {
-            case 1:
-                GameManager.Instance.rows = 2;
-                GameManager.Instance.columns = 2;
-                break;
-
-            case 2:
-                GameManager.Instance.rows = 2;
-                GameManager.Instance.columns = 3;
-                break;
-
-            case 3:
-                GameManager.Instance.rows = 3;
-                GameManager.Instance.columns = 4;
-                break;
-
-            case 4:
-                GameManager.Instance.rows = 4;
-                GameManager.Instance.columns = 4;
-                break;
-
-            case 5:
-                GameManager.Instance.rows = 5;
-                GameManager.Instance.columns = 6;
-                break;
-
-            default:
-                GameManager.Instance.rows = 6;
-                GameManager.Instance.columns = 6;
-                break;
+            GameManager.Instance.rows = 2;
+            GameManager.Instance.columns = 2;
+        }
+        else if (currentLevel == 2)
+        {
+            GameManager.Instance.rows = 2;
+            GameManager.Instance.columns = 3;
+        }
+        else if (currentLevel == 3)
+        {
+            GameManager.Instance.rows = 3;
+            GameManager.Instance.columns = 4;
+        }
+        else if (currentLevel == 4)
+        {
+            GameManager.Instance.rows = 4;
+            GameManager.Instance.columns = 4;
+        }
+        else if (currentLevel == 5)
+        {
+            GameManager.Instance.rows = 4;
+            GameManager.Instance.columns = 5;
+        }
+        else
+        {
+            GameManager.Instance.rows = 4 + (currentLevel - 5);
+            GameManager.Instance.columns = 4 + (currentLevel - 5);
         }
 
         GameManager.Instance.GenerateBoard();
-        UIManager.Instance.UpdateLevel(level);
     }
 
-    public void NextLevel()
+public void NextLevel()
     {
-        TransitionManager.Instance.FadeToNextLevel(() =>
-        {
-            LoadLevel(currentLevel + 1);
-        });
+        StartCoroutine(LevelTransitionRoutine());
     }
+
+    private IEnumerator LevelTransitionRoutine()
+    {
+        // Fade Out
+        yield return TransitionManager.Instance.FadeOut(0.4f);
+
+        currentLevel++;
+        SaveSystem.SaveProgress(currentLevel, GameManager.Instance.score);
+
+        UIManager.Instance.UpdateLevel(currentLevel);
+        LoadLevel();
+
+        // Fade In
+        yield return TransitionManager.Instance.FadeIn(0.4f);
+    }
+
+
 }
