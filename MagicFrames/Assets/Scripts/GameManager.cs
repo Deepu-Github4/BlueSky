@@ -11,6 +11,10 @@ public class GameManager : MonoBehaviour
     public Sprite[] cardFronts;
     public Sprite cardBack;
 
+    public int score = 0;
+    private int comboCount = 0;
+
+
     [Header("Board Settings")]
     public int rows = 2;
     public int columns = 2;
@@ -82,30 +86,39 @@ public class GameManager : MonoBehaviour
 
     public void OnCardRevealed(Card card)
     {
-        revealedCards.Add(card);
+        if (revealedCards.Count < 2)
+            revealedCards.Add(card);
 
         if (revealedCards.Count == 2)
-        {
             CheckMatch();
-        }
     }
 
-    private void CheckMatch()
+
+    void CheckMatch()
     {
         Card cardA = revealedCards[0];
         Card cardB = revealedCards[1];
 
         if (cardA.cardID == cardB.cardID)
         {
+            // Match found
             cardA.SetMatched();
             cardB.SetMatched();
+
+            comboCount++;
+            AddScore(10 + (comboCount * 2));
         }
         else
         {
+            comboCount = 0; 
             StartCoroutine(FlipBackAfterDelay(cardA, cardB));
         }
+
         revealedCards.Clear();
+
+        CheckGameOver();
     }
+
 
     private System.Collections.IEnumerator FlipBackAfterDelay(Card a, Card b)
     {
@@ -113,5 +126,31 @@ public class GameManager : MonoBehaviour
 
         a.FlipBack();
         b.FlipBack();
+    }
+
+    public void AddScore(int amount)
+    {
+        score += amount;
+        UIManager.Instance.UpdateScore(score);
+    }
+
+    private void CheckGameOver()
+    {
+        foreach (Transform child in boardContainer)
+        {
+            Card card = child.GetComponent<Card>();
+            if (card == null)
+                continue; 
+
+            if (!card.IsMatched())
+                return;
+        }
+
+        LevelManager.Instance?.NextLevel();
+    }
+
+    public void RestartLevel()
+    {
+        GenerateBoard();
     }
 }

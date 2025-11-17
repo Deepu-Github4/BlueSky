@@ -4,8 +4,8 @@ using TMPro;
 public class UIManager : MonoBehaviour
 {
     public static UIManager Instance;
-
     [SerializeField] private TMP_Text scoreText;
+    [SerializeField] private TMP_Text levelText;
 
     private void Awake()
     {
@@ -14,6 +14,11 @@ public class UIManager : MonoBehaviour
 
     public void UpdateScore(int score)
     {
-        scoreText.text = "Score: " + score;
+        scoreText.text = score.ToString();
+    }
+
+    public void UpdateLevel(int level)
+    {
+        levelText.text = level.ToString();
     }
 }

@@ -13,6 +13,8 @@ public class Card : MonoBehaviour
     private Image image;
     private bool isFlipped = false;
     private bool isMatched = false;
+    private bool isAnimating = false;
+
 
     private void Awake()
     {
@@ -22,27 +24,27 @@ public class Card : MonoBehaviour
 
     public void OnCardClicked()
     {
-        if (isMatched || isFlipped)
+        if (isMatched || isFlipped || isAnimating)
             return;
 
         StartCoroutine(FlipCard());
         GameManager.Instance.OnCardRevealed(this);
     }
 
+
     private IEnumerator FlipCard()
     {
-        // Flip out
+        isAnimating = true;
+
         for (float t = 0; t < 1; t += Time.deltaTime * 8)
         {
             transform.localScale = new Vector3(1 - t, 1, 1);
             yield return null;
         }
 
-        // Change image
         image.sprite = isFlipped ? backSprite : frontSprite;
         isFlipped = !isFlipped;
 
-        // Flip in
         for (float t = 0; t < 1; t += Time.deltaTime * 8)
         {
             transform.localScale = new Vector3(t, 1, 1);
@@ -50,7 +52,10 @@ public class Card : MonoBehaviour
         }
 
         transform.localScale = Vector3.one;
+
+        isAnimating = false;
     }
+
 
     public void SetMatched()
     {
@@ -59,7 +64,14 @@ public class Card : MonoBehaviour
 
     public void FlipBack()
     {
-        if (!isMatched && isFlipped)
-            StartCoroutine(FlipCard());
+        if (isMatched || isAnimating || !isFlipped)
+            return;
+
+        StartCoroutine(FlipCard());
+    }
+
+    public bool IsMatched()
+    {
+        return isMatched;
     }
 }
