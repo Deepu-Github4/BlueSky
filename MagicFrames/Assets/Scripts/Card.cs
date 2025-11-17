@@ -4,22 +4,27 @@ using System.Collections;
 
 public class Card : MonoBehaviour
 {
-    public int cardID; // Unique ID for matching pairs
+    public int cardID;
 
     [Header("Images")]
-    public Sprite frontSprite;
-    public Sprite backSprite;
+    public Image backImage;     
+    public Image frontImage;    
 
-    private Image image;
+    [Header("Sprites")]
+    public Sprite frontSprite;   
+    public Sprite backSprite;    
+
     private bool isFlipped = false;
     private bool isMatched = false;
     private bool isAnimating = false;
 
-
-    private void Awake()
+    private void Start()
     {
-        image = GetComponent<Image>();
-        image.sprite = backSprite; // Start with back side
+        backImage.sprite = backSprite;
+        frontImage.sprite = frontSprite;
+
+        backImage.gameObject.SetActive(true);
+        frontImage.gameObject.SetActive(false);
     }
 
     public void OnCardClicked()
@@ -31,7 +36,6 @@ public class Card : MonoBehaviour
         GameManager.Instance.OnCardRevealed(this);
     }
 
-
     private IEnumerator FlipCard()
     {
         isAnimating = true;
@@ -42,8 +46,9 @@ public class Card : MonoBehaviour
             yield return null;
         }
 
-        image.sprite = isFlipped ? backSprite : frontSprite;
         isFlipped = !isFlipped;
+        backImage.gameObject.SetActive(!isFlipped);
+        frontImage.gameObject.SetActive(isFlipped);
 
         for (float t = 0; t < 1; t += Time.deltaTime * 8)
         {
@@ -52,22 +57,23 @@ public class Card : MonoBehaviour
         }
 
         transform.localScale = Vector3.one;
-
         isAnimating = false;
-    }
-
-
-    public void SetMatched()
-    {
-        isMatched = true;
     }
 
     public void FlipBack()
     {
-        if (isMatched || isAnimating || !isFlipped)
+        if (isMatched || !isFlipped || isAnimating)
             return;
 
         StartCoroutine(FlipCard());
+    }
+
+    public void SetMatched()
+    {
+        isMatched = true;
+        Color c = frontImage.color;
+        c.a = 0.5f;
+        frontImage.color = c;
     }
 
     public bool IsMatched()

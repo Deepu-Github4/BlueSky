@@ -57,7 +57,9 @@ public class LevelManager : MonoBehaviour
 
     public void NextLevel()
     {
-        Debug.Log("Check");
-        LoadLevel(currentLevel + 1);
+        TransitionManager.Instance.FadeToNextLevel(() =>
+        {
+            LoadLevel(currentLevel + 1);
+        });
     }
 }
