@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using System.Collections;
 
 public class GameManager : MonoBehaviour
 {
@@ -78,27 +79,37 @@ public class GameManager : MonoBehaviour
         float areaWidth = rt.rect.width;
         float areaHeight = rt.rect.height;
 
-        float spacingX = grid.spacing.x;
-        float spacingY = grid.spacing.y;
+        int totalCards = rows * columns;
 
-        float totalSpacingX = spacingX * (columns - 1);
-        float totalSpacingY = spacingY * (rows - 1);
+        float targetCardSize = 120f; 
 
-        float availableWidth = areaWidth - totalSpacingX;
-        float availableHeight = areaHeight - totalSpacingY;
+        if (totalCards >= 24)
+            targetCardSize = 80f;  
 
-        float newWidth = availableWidth / columns;
-        float newHeight = availableHeight / rows;
+        float requiredWidth = (targetCardSize * columns) + (targetCardSize * (columns - 1));
+        float requiredHeight = (targetCardSize * rows) + (targetCardSize * (rows - 1));
 
-        float aspect = 140f / 190f;
+        float scale = 1f;
 
-        if (newWidth / newHeight > aspect)
-            newWidth = newHeight * aspect;
-        else
-            newHeight = newWidth / aspect;
+        if (requiredWidth > areaWidth || requiredHeight > areaHeight)
+        {
+            float widthScale = areaWidth / requiredWidth;
+            float heightScale = areaHeight / requiredHeight;
+            scale = Mathf.Min(widthScale, heightScale);
+        }
 
-        grid.cellSize = new Vector2(newWidth, newHeight);
+        float finalSize = targetCardSize * scale;
+
+        float spacing = finalSize;
+
+        grid.cellSize = new Vector2(finalSize, finalSize);
+        grid.spacing = new Vector2(spacing, spacing);
+        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        grid.constraintCount = columns;
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
     }
+
 
     public void OnCardRevealed(Card card)
     {
@@ -121,11 +132,13 @@ public class GameManager : MonoBehaviour
 
             comboCount++;
             AddScore(10 + comboCount * 2);
+            AudioManager.Instance.PlaySFX(AudioManager.Instance.correctMatch);
         }
         else
         {
             comboCount = 0;
             StartCoroutine(FlipBackAfterDelay(cardA, cardB));
+            AudioManager.Instance.PlaySFX(AudioManager.Instance.wrongMatch);
         }
 
         revealedCards.Clear();
@@ -155,6 +168,7 @@ public class GameManager : MonoBehaviour
                 return;
         }
 
+        AudioManager.Instance.PlaySFX(AudioManager.Instance.levelComplete);
         LevelManager.Instance?.NextLevel();
     }
 

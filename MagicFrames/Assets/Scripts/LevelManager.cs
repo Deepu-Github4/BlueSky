@@ -30,48 +30,24 @@ public class LevelManager : MonoBehaviour
 
     public void LoadLevel()
     {
-        if (currentLevel == 1)
-        {
-            GameManager.Instance.rows = 2;
-            GameManager.Instance.columns = 2;
-        }
-        else if (currentLevel == 2)
-        {
-            GameManager.Instance.rows = 2;
-            GameManager.Instance.columns = 3;
-        }
-        else if (currentLevel == 3)
-        {
-            GameManager.Instance.rows = 3;
-            GameManager.Instance.columns = 4;
-        }
-        else if (currentLevel == 4)
-        {
-            GameManager.Instance.rows = 4;
-            GameManager.Instance.columns = 4;
-        }
-        else if (currentLevel == 5)
-        {
-            GameManager.Instance.rows = 4;
-            GameManager.Instance.columns = 5;
-        }
-        else
-        {
-            GameManager.Instance.rows = 4 + (currentLevel - 5);
-            GameManager.Instance.columns = 4 + (currentLevel - 5);
-        }
+        int totalCards = GetTotalCardsForLevel(currentLevel);
+
+        int r, c;
+        CalculateGrid(totalCards, out r, out c);
+
+        GameManager.Instance.rows = r;
+        GameManager.Instance.columns = c;
 
         GameManager.Instance.GenerateBoard();
     }
 
-public void NextLevel()
+    public void NextLevel()
     {
         StartCoroutine(LevelTransitionRoutine());
     }
 
     private IEnumerator LevelTransitionRoutine()
     {
-        // Fade Out
         yield return TransitionManager.Instance.FadeOut(0.4f);
 
         currentLevel++;
@@ -80,9 +56,24 @@ public void NextLevel()
         UIManager.Instance.UpdateLevel(currentLevel);
         LoadLevel();
 
-        // Fade In
         yield return TransitionManager.Instance.FadeIn(0.4f);
     }
 
+    public void CalculateGrid(int totalCards, out int rows, out int cols)
+    {
+        rows = Mathf.CeilToInt(Mathf.Sqrt(totalCards));
+        cols = Mathf.CeilToInt((float)totalCards / rows);
+
+        while (rows * cols != totalCards)
+        {
+            rows++;
+            cols = Mathf.CeilToInt((float)totalCards / rows);
+        }
+    }
+
+    private int GetTotalCardsForLevel(int level)
+    {
+        return 4 + (level - 1) * 4;
+    }
 
 }

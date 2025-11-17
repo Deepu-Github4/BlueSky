@@ -19,6 +19,7 @@ public class TransitionManager : MonoBehaviour
 
     public IEnumerator FadeOut(float duration = 0.5f)
     {
+        AudioManager.Instance.PlaySFX(AudioManager.Instance.fadeSound);
         for (float t = 0; t < duration; t += Time.deltaTime)
         {
             cg.alpha = Mathf.Lerp(0, 1, t / duration);

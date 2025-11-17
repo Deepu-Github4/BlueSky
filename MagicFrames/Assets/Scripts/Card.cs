@@ -32,6 +32,7 @@ public class Card : MonoBehaviour
         if (isMatched || isFlipped || isAnimating)
             return;
 
+        AudioManager.Instance.PlaySFX(AudioManager.Instance.cardClick);
         StartCoroutine(FlipCard());
         GameManager.Instance.OnCardRevealed(this);
     }
@@ -49,6 +50,7 @@ public class Card : MonoBehaviour
         isFlipped = !isFlipped;
         backImage.gameObject.SetActive(!isFlipped);
         frontImage.gameObject.SetActive(isFlipped);
+      //  AudioManager.Instance.PlaySFX(AudioManager.Instance.cardFlip);
 
         for (float t = 0; t < 1; t += Time.deltaTime * 8)
         {
